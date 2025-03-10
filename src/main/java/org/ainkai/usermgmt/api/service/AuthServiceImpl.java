@@ -40,7 +40,8 @@ public class AuthServiceImpl implements AuthService {
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
       throw new RuntimeException("User already exists");
     }
-    User user = mapper.toUserEntity(signUpRequest);
+    User user = new User();
+    user = mapper.toUserEntity(signUpRequest);
     switch (signUpRequest.getGender()) {
       case "M":
         user.setGender(Gender.MALE);

@@ -11,4 +11,7 @@ public class UConstants {
   public static final String INVALID_EMAIL_ACTIVATION_CODE_MESSAGE = "Invalid activation code";
   public static final String ALREADY_USED_EMAIL_ACTIVATION_CODE_MESSAGE =
       "Activation code already used";
+  public static final String REGENERATE_ACTIVATION_CODE_SUCCESS_MESSAGE =
+      "regenerate activation code successful";
+  public static final String AUTHORIZATION_HEADER_NAME = "Authorization";
 }

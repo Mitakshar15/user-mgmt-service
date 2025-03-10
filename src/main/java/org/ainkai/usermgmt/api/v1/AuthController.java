@@ -54,14 +54,25 @@ public class AuthController implements AuthControllerV1Api {
 
   public ResponseEntity<ActivationResponse> activateUser(
       @NotNull
-      @Parameter(name = "Authorization", description = "", required = true, in = ParameterIn.HEADER)
-      @RequestHeader(value = "Authorization") String authorization,
+      @Parameter(name = UConstants.AUTHORIZATION_HEADER_NAME, description = "", required = true,
+          in = ParameterIn.HEADER)
+      @RequestHeader(value = UConstants.AUTHORIZATION_HEADER_NAME) String authorization,
       @Parameter(name = "ActivationRequest", description = "Activation Request", required = true)
       @Valid @RequestBody ActivationRequest activationRequest) {
     User user = userService.findUserByToken(authorization);
     authService.activateUser(user, activationRequest.getActivationCode());
     ActivationResponse response = mapper.toActivationResponse(
         builder.buildSuccessApiResponse(UConstants.USER_ACTIVATION_SUCCESS_MESSAGE));
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<UserMgmtBaseApiResponse> regenerateActivationCode(String authorization)
+      throws Exception {
+    UserMgmtBaseApiResponse response = mapper.toUserMgmtBaseApiResponse(
+        builder.buildSuccessApiResponse(UConstants.REGENERATE_ACTIVATION_CODE_SUCCESS_MESSAGE));
+    User user = userService.findUserByToken(authorization);
+    authService.generateActivationToken(user);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

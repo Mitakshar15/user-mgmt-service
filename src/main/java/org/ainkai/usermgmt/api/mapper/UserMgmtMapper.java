@@ -15,7 +15,6 @@ public interface UserMgmtMapper {
   @Mapping(target = "gender", ignore = true)
   User toUserEntity(SignUpRequest signUpRequest);
 
-  @Mapping(target = "data", ignore = true)
   AuthResponse toAuthResponse(BaseApiResponse apiResponse);
 
   ActivationResponse toActivationResponse(BaseApiResponse apiResponse);
