@@ -1,5 +1,6 @@
 package org.ainkai.usermgmt.api.v1;
 
+import io.netty.util.Constant;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.mail.MessagingException;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.ainkai.usermgmt.api.builder.ApiResponseBuilder;
 import org.ainkai.usermgmt.api.data.model.User;
+import org.ainkai.usermgmt.api.exceptions.UserMgmtServiceException;
 import org.ainkai.usermgmt.api.mapper.UserMgmtMapper;
 import org.ainkai.usermgmt.api.service.AuthService;
 import org.ainkai.usermgmt.api.service.UserService;
@@ -34,7 +36,7 @@ public class AuthController implements AuthControllerV1Api {
 
   @Override
   public ResponseEntity<AuthResponse> signUp(@Valid SignUpRequest signUpRequest)
-      throws MessagingException {
+          throws MessagingException, UserMgmtServiceException {
     User user = authService.signUp(signUpRequest);
     Authentication authentication =
         new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
@@ -45,7 +47,8 @@ public class AuthController implements AuthControllerV1Api {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
-  public ResponseEntity<AuthResponse> signIn(@Valid SignInRequest signInRequest) {
+  public ResponseEntity<AuthResponse> signIn(@Valid SignInRequest signInRequest)
+      throws UserMgmtServiceException {
     AuthResponse response =
         mapper.toAuthResponse(builder.buildSuccessApiResponse(UConstants.LOGIN_SUCCESS_MESSAGE));
     response.data(authService.signIn(signInRequest));
@@ -53,11 +56,7 @@ public class AuthController implements AuthControllerV1Api {
   }
 
   public ResponseEntity<ActivationResponse> activateUser(
-      @NotNull
-      @Parameter(name = UConstants.AUTHORIZATION_HEADER_NAME, description = "", required = true,
-          in = ParameterIn.HEADER)
-      @RequestHeader(value = UConstants.AUTHORIZATION_HEADER_NAME) String authorization,
-      @Parameter(name = "ActivationRequest", description = "Activation Request", required = true)
+      @NotNull @RequestHeader(value = UConstants.AUTHORIZATION_HEADER_NAME) String authorization,
       @Valid @RequestBody ActivationRequest activationRequest) {
     User user = userService.findUserByToken(authorization);
     authService.activateUser(user, activationRequest.getActivationCode());
@@ -73,6 +72,15 @@ public class AuthController implements AuthControllerV1Api {
         builder.buildSuccessApiResponse(UConstants.REGENERATE_ACTIVATION_CODE_SUCCESS_MESSAGE));
     User user = userService.findUserByToken(authorization);
     authService.generateActivationToken(user);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<UserMgmtBaseApiResponse> validateUser(String authorization)
+      throws Exception {
+    UserMgmtBaseApiResponse response = mapper
+        .toUserMgmtBaseApiResponse(builder.buildSuccessApiResponse(UConstants.VALID_USER_MESSAGE));
+    userService.validateUser(authorization);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

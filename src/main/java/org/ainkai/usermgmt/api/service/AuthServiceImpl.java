@@ -7,6 +7,7 @@ import org.ainkai.usermgmt.api.data.VerificationTokenRepository;
 import org.ainkai.usermgmt.api.data.UserRepository;
 import org.ainkai.usermgmt.api.data.model.VerificationToken;
 import org.ainkai.usermgmt.api.data.model.User;
+import org.ainkai.usermgmt.api.exceptions.UserMgmtServiceException;
 import org.ainkai.usermgmt.api.utils.UConstants;
 import org.ainkai.usermgmt.api.utils.UserUtils;
 import org.ainkai.usermgmt.api.utils.enums.TokenType;
@@ -36,12 +37,11 @@ public class AuthServiceImpl implements AuthService {
   private final UserUtils userUtils;
 
   @Override
-  public User signUp(SignUpRequest signUpRequest) throws MessagingException {
+  public User signUp(SignUpRequest signUpRequest) throws MessagingException,UserMgmtServiceException {
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-      throw new RuntimeException("User already exists");
+      throw new UserMgmtServiceException(UConstants.REQUEST_ERROR_KEY,UConstants.USER_ALREADY_EXISTS_MESSAGE);
     }
-    User user = new User();
-    user = mapper.toUserEntity(signUpRequest);
+    User user = mapper.toUserEntity(signUpRequest);
     switch (signUpRequest.getGender()) {
       case "M":
         user.setGender(Gender.MALE);
@@ -62,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public AuthResponseDto signIn(SignInRequest signInRequest) {
+  public AuthResponseDto signIn(SignInRequest signInRequest) throws UserMgmtServiceException {
     Authentication authentication =
         customUserServiceImpl.authenticate(signInRequest.getEmail(), signInRequest.getPassword());
     SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public void activateUser(User user, String activationCode) {
+  public void activateUser(User user, String activationCode) throws UserMgmtServiceException {
     if (!user.isActive() && !user.isEmailVerified()) {
       VerificationToken verificationToken =
           verificationTokenRepository.findByUserId(user.getUserId());
@@ -85,13 +85,13 @@ public class AuthServiceImpl implements AuthService {
           verificationTokenRepository.save(verificationToken);
           userRepository.save(user);
         } else {
-          throw new RuntimeException(UConstants.EMAIL_ACTIVATION_CODE_EXPIRED_MESSAGE);
+          throw new UserMgmtServiceException(UConstants.CODE_INVALID_KEY,UConstants.EMAIL_ACTIVATION_CODE_EXPIRED_MESSAGE);
         }
       } else {
-        throw new RuntimeException(UConstants.INVALID_EMAIL_ACTIVATION_CODE_MESSAGE);
+        throw new UserMgmtServiceException(UConstants.CODE_INVALID_KEY,UConstants.INVALID_EMAIL_ACTIVATION_CODE_MESSAGE);
       }
     } else {
-      throw new RuntimeException(UConstants.ALREADY_USED_EMAIL_ACTIVATION_CODE_MESSAGE);
+      throw new UserMgmtServiceException(UConstants.CODE_INVALID_KEY,UConstants.ALREADY_USED_EMAIL_ACTIVATION_CODE_MESSAGE);
     }
   }
 

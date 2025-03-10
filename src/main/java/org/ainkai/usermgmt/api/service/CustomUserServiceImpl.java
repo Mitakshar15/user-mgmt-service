@@ -3,6 +3,8 @@ package org.ainkai.usermgmt.api.service;
 import lombok.AllArgsConstructor;
 import org.ainkai.usermgmt.api.data.UserRepository;
 import org.ainkai.usermgmt.api.data.model.User;
+import org.ainkai.usermgmt.api.exceptions.UserMgmtServiceException;
+import org.ainkai.usermgmt.api.utils.UConstants;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,13 +38,13 @@ public class CustomUserServiceImpl implements UserDetailsService {
   }
 
   public Authentication authenticate(String username, String password)
-      throws AuthenticationException {
+          throws AuthenticationException, UserMgmtServiceException {
     UserDetails userDetails = loadUserByUsername(username);
     if (userDetails == null) {
-      throw new BadCredentialsException(":: INVALID USERNAME");
+      throw new UserMgmtServiceException(UConstants.DATA_NOT_FOUND_KEY,UConstants.INVALID_USERNAME_MESSAGE);
     }
     if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-      throw new BadCredentialsException(":: INVALID PASSWORD");
+      throw new UserMgmtServiceException(UConstants.DATA_NOT_FOUND_KEY,UConstants.INVALID_PASSWORD_MESSAGE);
     }
     return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
   }

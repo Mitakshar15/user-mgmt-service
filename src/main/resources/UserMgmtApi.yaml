@@ -75,7 +75,7 @@ paths:
             application/json:
               schema:
                 $ref: './UserMgmtApiComponents.yaml#/components/schemas/UserMgmtBaseApiResponse'
-        '400':
+        '401':
           description: "Validations failed for request arguments ..."
           content:
             application/json:
@@ -181,8 +181,8 @@ paths:
             application/json:
               schema:
                 $ref: './UserMgmtApiComponents.yaml#/components/schemas/UserMgmtBaseApiResponse'
-        '400':
-          description: "Validations failed for request arguments ..."
+        '500':
+          description: "Internal Server Error"
           content:
             application/json:
               schema:
